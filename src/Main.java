@@ -1,6 +1,6 @@
 import java.io.*;
-import java.util.Scanner;
-import java.util.ArrayList;
+import java.util.*;
+
 
 public class Main {
     private static ArrayList<Beer> beers = new ArrayList<Beer>();
@@ -26,6 +26,15 @@ public class Main {
             else if ("load".equals(result[0])) {
                 load(result);
             }
+            else if ("search".equals(result[0])) {
+                search(result);
+            }
+            else if ("find".equals(result[0])) {
+                find(result);
+            }
+            else if ("delete".equals(result[0])) {
+                delete(result);
+            }
         }
     }
 
@@ -43,8 +52,22 @@ public class Main {
     }
 
     public static void list(String[] args){
+        if(args.length >= 2){
+            for (String a : args){
+                if (a.equals("name")){
+                    Collections.sort(beers, new NameComparator());
+                } else if(a.equals("style")){
+                    Collections.sort(beers, new StyleComparator());
+                } else if(a.equals("strength")){
+                    Collections.sort(beers, new StrengthComparator());
+                } else {
+                    System.out.println("Hibás szűrési paraméter: " + a);
+                    return;
+                }
+            }
+        }
         for (Beer beer : beers) {
-            System.out.println(beer.toString());
+            System.out.println(beer);
         }
     }
 
@@ -69,6 +92,7 @@ public class Main {
             return;
         }
 
+
         try (FileOutputStream fileOut = new FileOutputStream(args[1]);
              ObjectOutputStream out = new ObjectOutputStream(fileOut)){
             out.writeObject(beers);
@@ -76,5 +100,38 @@ public class Main {
         } catch (IOException e) {
             System.out.println("Hiba a mentés közben: " + e);
         }
+    }
+
+    public static void search(String[] args){
+        if(args.length != 2){
+            System.out.println("Hibás bemenet: search [név]");
+            return;
+        }
+
+        for(Beer beer : beers){
+            if(beer.getName().equals(args[1])) System.out.println(beer);
+        }
+    }
+
+    public static void find(String[] args){
+        if(args.length != 2){
+            System.out.println("Hibás bemenet: find [szöveg]");
+            return;
+        }
+
+        for(Beer beer : beers){
+            if(beer.getName().contains(args[1])) System.out.println(beer);
+        }
+    }
+
+    public static void delete(String[] args){
+        if(args.length != 2){
+            System.out.println("Hibás bemenet: delete [név]");
+            return;
+        }
+
+        int indexOfBeer = Collections.binarySearch(beers, new Beer(args[1],null, null), new NameComparator());
+        if(indexOfBeer >= 0) beers.remove(indexOfBeer);
+        else System.out.println("Nincs találat!");
     }
 }
